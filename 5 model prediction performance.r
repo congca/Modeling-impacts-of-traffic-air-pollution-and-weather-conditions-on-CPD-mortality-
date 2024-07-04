@@ -52,7 +52,19 @@ preds <- as.numeric(pre_knn)
 
 library(e1071)
 library(class) 
-svmmodel <- svm(CVD_total_mortality ~.,data=traindata)
+library(caret)  
+tuned_params_svr <- expand.grid(cost = 0.1, gamma = 0.001)
+# Train SVR model with optimal parameters using 10-fold cross-validation
+svmmodel <- train(CVD_total_mortality ~ .,
+                   data = traindata,
+                   method = "svm",
+                   trControl = trainControl(method = "cv", number = 10),
+                   tuneGrid = tuned_params_svr,
+                   preProcess = c("center", "scale"))
+# Print optimal parameters and model summary
+print(svm_model$bestTune)
+summary(svm_model$finalModel)
+
 x <- traindata[,-1]
 svm.pred <- predict(svmmodel,traindata[,-1])
 dattt <-  traindata[,1]
@@ -76,6 +88,12 @@ auc(roc.multi)
 ##################### 
 library(rpart)
 library(rpart.plot)
+library(rpart)
+library(rpart.plot)
+# Train Decision Tree model with optimal cp value
+m.rpart <- rpart(CVD_total_mortality ~ .,
+                  data = traindata,
+                  control = rpart.control(cp = 0.026))
 m.rpart <- rpart(CVD_total_mortality ~.,data=traindata)
 summary(m.rpart)
 rpart.plot(m.rpart)
